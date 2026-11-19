@@ -106,8 +106,8 @@ def inference(args, domains_interval):
         print("Decoder loaded.")
     encoder.to(device)
     decoder.to(device)
-    # 3. 加载NoisePredictor（扩散模型）
-    noise_predictor = NoisePredictor(c=1024).to(device)  # 与训练时的通道数一致
+
+    noise_predictor = NoisePredictor(c=1024).to(device)  
     if args.noise_predictor_ckpt != "None":
         print(f"Loading noise predictor from {args.noise_predictor_ckpt}")
         noise_predictor.load_state_dict(torch.load(args.noise_predictor_ckpt, map_location=device))
@@ -115,7 +115,7 @@ def inference(args, domains_interval):
     else:
         raise ValueError("Noise predictor checkpoint must be provided!")
 
-    # 4. 初始化DDIM采样器
+
     ddim_sampler = LatentDDIMSampler(
         noise_predictor=noise_predictor,
         num_timesteps=args.num_timesteps,
@@ -144,7 +144,7 @@ def inference(args, domains_interval):
                     inverse_momentum_LR = downgrade_in_seq(inverse_momentum.clone(), t, domains_interval)
 
                 l, h = encoder(sr_img + inverse_momentum_LR, t)
-                # 5.3 DDIM采样生成高分辨率latent
+
                 # denoised_latent = ddim_sampler.ddim_sample_loop(
                 #     latent_img_lr=l,
                 #     num_ddim_steps=args.ddim_steps,
@@ -154,14 +154,13 @@ def inference(args, domains_interval):
                 import matplotlib.pyplot as plt
                 import numpy as np
                 #
-                # # 假设 latent_vec 是你的 1×1024×4×4 向量
-                # latent_vec =l*0.5+ denoised_latent*0.5  # 示例随机向量
-                # feature_maps = latent_vec.squeeze(0)  # 去掉Batch，变为 1024×4×4
-                #
-                # # 归一化到 [0, 1]
+              
+                # latent_vec =l*0.5+ denoised_latent*0.5  
+                # feature_maps = latent_vec.squeeze(0)  
+
                 # feature_maps = (feature_maps - feature_maps.min()) / (feature_maps.max() - feature_maps.min())
 
-                # 拼成 32×32 的网格
+     
                 # grid_size = 32
                 # grid = np.zeros((grid_size * 4, grid_size * 4))+0.2
                 # for i in range(grid_size):
@@ -169,7 +168,7 @@ def inference(args, domains_interval):
                 #         idx = i * grid_size + j
                 #         grid[i * 4: (i + 1) * 4, j * 4: (j + 1) * 4] = feature_maps[idx].numpy()
                 #
-                # # 显示
+              
                 # plt.figure(figsize=(10, 10))
                 # plt.imshow(grid, cmap='gray')  # 用灰度图显示，也可换其他colormap
                 # plt.axis('off')
@@ -190,7 +189,7 @@ def inference(args, domains_interval):
                     sr_img = downgrade_in_seq(result, t - 1, domains_interval)
         save_img = F.interpolate(result, target, mode='bicubic', antialias=True)
 
-        # 确保目录存在
+ 
         save_path = os.path.join(saved_image_folder, dir)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -204,13 +203,13 @@ if __name__ == "__main__":
     parser.add_argument('--start', type=int, default=256, help='start of resolution')
     parser.add_argument('--target', type=int, default=1024, help='Target of super-resolution')
     # parser.add_argument('--ckpt', type=str, default="train_results/350000.pth")
-    parser.add_argument('--encoder_ckpt', type=str,default=r'./train_results/64_1024_Universal/models/encoder_2706000.pth')
-    parser.add_argument('--decoder_ckpt', type=str,default=r'./train_results/64_1024_Universal/models/decoder_2706000.pth')
+    parser.add_argument('--encoder_ckpt', type=str,default=r'./train_results/64_1024_Universal/models/encoder.pth')
+    parser.add_argument('--decoder_ckpt', type=str,default=r'./train_results/64_1024_Universal/models/decoder.pth')
     parser.add_argument('--noise_predictor_ckpt', type=str,
-                        default=r'.\train_results\64_1024_Universal\models\noise_predictor_3150000.pth')
-    # DDIM采样相关
+                        default=r'.\train_results\64_1024_Universal\models\noise_predictor.pth')
+ 
     parser.add_argument('--num_timesteps', type=int, default=2000, help='Total diffusion timesteps (same as training)')
-    parser.add_argument('--ddim_steps', type=int, default=10, help='Number of DDIM sampling steps (smaller=faster)')
+    parser.add_argument('--ddim_steps', type=int, default=50, help='Number of DDIM sampling steps (smaller=faster)')
     parser.add_argument('--eta', type=float, default=0.0, help='DDIM eta (0=deterministic, 1=stochastic)')
 
     parser.add_argument('--cuda', type=int, default=0, help='GPU index to use')
