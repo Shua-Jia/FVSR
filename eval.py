@@ -47,9 +47,9 @@ class Dataset(data.Dataset):
         path = self.paths[index]
         img = Image.open(path)
         parent_folder = path.parent
-        # 再获取这个父级文件夹相对于 'input' 文件夹的路径
+
         target_path = parent_folder.relative_to('input')
-        # 转成字符串（可选，默认是Path对象）
+
         target_path_str = str(target_path)
         filename=path.stem
 
@@ -170,7 +170,7 @@ def inference(args, domains_interval):
                 #
               
                 # plt.figure(figsize=(10, 10))
-                # plt.imshow(grid, cmap='gray')  # 用灰度图显示，也可换其他colormap
+                # plt.imshow(grid, cmap='gray')  
                 # plt.axis('off')
                 # plt.show()
 
